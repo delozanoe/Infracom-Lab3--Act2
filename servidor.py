@@ -1,48 +1,152 @@
-import socketserver, threading, socket
+import socket, hashlib, threading, time, datetime, osas 
 
-class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
+#TODO
+lock = threading.Lock()
+#GLOBAL VARIABLES
 
-    def handle(self):
-        data = str(self.request.recv(1024), 'ascii')
-        current_thread = threading.current_thread()
-        #The response to what ?
-        response = bytes("{}: {}".format(current_thread.name, data), 'ascii')
-        print("{}: client: {}, wrote: {}".format(current_thread.name, self.client_address, data))
-        #socket.sendto(data.upper(), self.client_address)
-        self.request.sendall(response)
+attend = 0
+BUFFER = 4096
 
-class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
-    pass
 
-def client(ip, port, message):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.connect((ip, port))
-        sock.sendall(bytes(message, 'ascii'))
-        response = str(sock.recv(1024), 'ascii')
-        print("Received: {}".format(response))
+#Varaibles to tranfer
+host = ""
+BUFFER = 4096
 
-if __name__ == "__main__":
-    HOST, PORT = "localhost", 0
 
-    string_input  = input(str('Cuantos clientes va a recibir el men'))
-    clients_number = int(string_input)
-    #Start a thread woth the server -- that thread will then start one
 
-    server = ThreadedUDPServer((HOST, PORT), ThreadedUDPRequestHandler)
+#Menu
+def menu():
+    fileName = ""
+    fileToTransfer = ""
+    dataInput = int(input("Select file to send 1 (100 MB) o 2 (250MB"))
+    if(dataInput == 1):
+        fileName = ""
+        fileToTransfer = ".zip"
+    elif(dataInput == 2):
+        fileName = "
+        fileToTransfer =".zip"
+    entr = int(input("How many clients do you want to manage: "))
+    clientsNumb  = entr
+    return fileName, fileToTransfer, clientsNumb
 
-    server_thread = threading.Thread(target=server.serve_forever)
-    server_thread.daemon = True
+#Data to transfer
+file_data = menu()
+fileName = file_data[0]
+fileToTransfer = file_data[1]
+number_clients = file_data[2]
+connected_customers = 0
+attend = False
 
-    try:
-        server_thread.start()
-        print("Server started at {} port {}".format(HOST, PORT))
-        print("Server loop running in thread:", server_thread.name)
-        while clients_number > 0:
-            client(HOST, PORT, "We are gonna send the file")
-            clients_number -= 1
-        server.shutdown()
-        #Aca debemos manerar los port
-    except (KeyboardInterrupt, SystemExit):
-        server.shutdown()
-        server.server_close()
-        exit()
+
+#Method Server
+def server(port1,dir):
+    port = 20001+port1
+    s = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+
+    #Bind to addresss and ip
+    s.bind((host, port))
+    s.sendto(str(port).encode(),dir)
+
+    #Start server
+    while True: 
+        data = s.recvfrom()
+        message  = data[0]
+        dir = data[1]
+
+        print("Server received", message.decode())
+
+        if(message.decode() == "LISTENING!):
+            connected_customers += 1
+            print("Customers connected: ", connected_customers)
+            encrypHash = hashlib.sha1()
+
+            while True:
+                if(connected_customers >= number_clients or attend ):
+                    print("Starting to send")
+                    break
+            #The server is on and listening
+            attend =  True
+            i = 0
+            s.sendto(fileToTransfer.encode(),dir)
+
+            time.sleep(0.01)
+
+            startTransfer  = time.time()
+            #File to transfer
+            f = open(fileName, 'rb') 
+            while True: 
+                i+= 1 
+                data = f.read(BUFFER)
+                if not data: 
+                    break
+                encrypHash.update(data)
+                s.sendto(data,dir)
+            print("Send File")
+
+            #Create Hash 
+            hass =  str(encrypHash.hexdigest())
+            s.sendto(("FINM"+has).encode(),dir)
+            f.close()
+
+            data = s.recvfrom(BUFFER)
+
+            #Notification of recive
+            datosCliente  = data[0].decode().split("/")
+            reception = datosCliente[1]
+            print(reception)
+
+            #Time notification
+            endToTransfer = float(datosCliente[2])
+            totalTransfer = endToTransfer -startTransfer
+
+            #How many packages has the client recive
+            packClientRecive = datosCliente[0]
+            hasofRecive = datosCliente[4]
+
+            #LLAMAR METODO DE CLIENTE
+
+            print('End sending')
+            connected_customers -=1
+            print("Customers connected: ", connected_customers)
+
+            #End or not notification
+            endSesion = datosCliente[3]
+
+            if(endSesion == "FINISH"):
+                print(endSesion)
+                s.close()
+                print("End server on port", port)
+                break
+
+
+port_1 = 20001
+s = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+
+# Bind to address and ip
+s.bind((host, port_1))
+i=1
+while True:
+    data = s.recvfrom(BUFFER)
+    msg = data[0]
+    dir = data[1]
+
+    if (msg.decode() == "REQUEST"):
+        if(i==26):
+            i=1
+        t = threading.Thread(target=servidor, args=(i,dir))
+        i += 1
+        t.start()
+
+    if (msg.decode() == "END"):
+        print("FIN CONEXIONES")
+        break
+
+
+
+
+
+
+
+
+    
+    
