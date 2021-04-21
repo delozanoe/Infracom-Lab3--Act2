@@ -7,10 +7,12 @@ import time
 
 BUFFER = 4096
 lock = threading.Lock()
+clienteNum = 0;
 
 def cliente(num, last, lock):
     datosLog = ""
     console_msgs = []
+    clienteNum = num
     console_msgs.append("Cliente #" + str(num))
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -114,7 +116,7 @@ def createLog():
     # Fecha y hora --creacion log
     fecha = datetime.datetime.now()
 
-    logName = "./Logs/Logs-client/" + str(fecha.timestamp()) + ".txt"
+    logName = "./Logs/Logs-client/Cliente" + str(clienteNum) + "-Prueba-" +  str(fecha.timestamp()) + ".txt"
     logFile = open(logName, "a")
     logFile.write("Fecha: " + str(fecha) + "\n")
 
@@ -123,7 +125,7 @@ def createLog():
     logFile.close()
     return logName
 
-n_clients = 1
+n_clients = 10
 lock = threading.Lock()
 file = createLog()
 
