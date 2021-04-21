@@ -7,7 +7,7 @@ import time
 
 BUFFER = 4096
 lock = threading.Lock()
-pruebaNum = 1;
+pruebaNum = 6;
 
 def cliente(num, last, lock):
     datosLog = ""
@@ -39,7 +39,7 @@ def cliente(num, last, lock):
 
     hashR = ""
     sha1 = hashlib.sha1()
-    fileName = "./Recibidos/Cliente" + tr(num) + "-Prueba-" + str(pruebaNum) + fTipo
+    fileName = "./Recibidos/Cliente" + str(num+1) + "-Prueba-" + str(pruebaNum) + fTipo
     f = open(fileName, 'wb')
     console_msgs.append("Recibiendo archivo")
     print("Recibiendo archivo", num)
