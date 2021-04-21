@@ -7,12 +7,11 @@ import time
 
 BUFFER = 4096
 lock = threading.Lock()
-clienteNum = 0;
+pruebaNum = 1;
 
 def cliente(num, last, lock):
     datosLog = ""
     console_msgs = []
-    clienteNum = num
     console_msgs.append("Cliente #" + str(num))
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -40,7 +39,7 @@ def cliente(num, last, lock):
 
     hashR = ""
     sha1 = hashlib.sha1()
-    fileName = "./Recibidos/" + str(num) + fTipo
+    fileName = "./Recibidos/Cliente" + tr(num) + "-Prueba-" + str(pruebaNum) + fTipo
     f = open(fileName, 'wb')
     console_msgs.append("Recibiendo archivo")
     print("Recibiendo archivo", num)
@@ -116,7 +115,7 @@ def createLog():
     # Fecha y hora --creacion log
     fecha = datetime.datetime.now()
 
-    logName = "./Logs/Logs-client/Cliente" + str(clienteNum) + "-Prueba-" +  str(fecha.timestamp()) + ".txt"
+    logName = "./Logs/Logs-client/" + str(fecha.timestamp()) + ".txt"
     logFile = open(logName, "a")
     logFile.write("Fecha: " + str(fecha) + "\n")
 
