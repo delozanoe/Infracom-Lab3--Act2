@@ -1,0 +1,22 @@
+Fecha: 2021-04-20 20:15:31.411215
+Nombre del archivo: 100MB.txt
+Tamanio del archivo: 539 bytes
+----------------------------------------
+Cliente 0 termino con estado de Exito
+Numero de paquetes enviados por el servidor:2
+Numero de paquetes recibidos por el cliente:2
+Tiempo: 0.0029914379119873047 segundos
+Hash calculado por el cliente: 
+7509fc36e93dddacb658fd0abbd7341e9eceee6b
+HASH calculado en el servidor: 
+7509fc36e93dddacb658fd0abbd7341e9eceee6b
+---------------------------------------
+Cliente 0 termino con estado de Exito
+Numero de paquetes enviados por el servidor:2
+Numero de paquetes recibidos por el cliente:2
+Tiempo: 0.011971235275268555 segundos
+Hash calculado por el cliente: 
+7509fc36e93dddacb658fd0abbd7341e9eceee6b
+HASH calculado en el servidor: 
+7509fc36e93dddacb658fd0abbd7341e9eceee6b
+---------------------------------------
