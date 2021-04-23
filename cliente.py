@@ -5,18 +5,27 @@ import threading
 import hashlib
 import time
 
+def pedirDatos():
+    
+    entr = int(input("Ingrese el numero de la prueba que va a realizar: "))
+    nPrueba = entr
+    entr = int(input("Ingrese el numero de clientes que desea que se conecten al servidor: "))
+    numClientes = entr
+    return nPrueba, numClientes
+
+file_data = pedirDatos()
 BUFFER = 4096
 lock = threading.Lock()
-pruebaNum = 6;
+pruebaNum = file_data[0];
 
-def cliente(num, last, lock):
+def threadCliente(num, last, lock):
     datosLog = ""
     console_msgs = []
     console_msgs.append("Cliente #" + str(num))
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(10)
-    host = "127.0.0.1"
+    host = "192.168.0.51"
     host_port = (host, 20001)
     i = 0
 
@@ -97,7 +106,7 @@ def cliente(num, last, lock):
     # Mandar Terminate para terminar el servidor en el puerto en que se encuentre
     datosLog += "TERMINATE/"
 
-    datosLog += "Hash calculado por el cliente: \n" + str(hashR)
+    datosLog += "Hash calculado por el threadCliente: \n" + str(hashR)
 
     # print(datosLog)
     s.sendto(datosLog.encode(), host_port)
@@ -124,7 +133,7 @@ def createLog():
     logFile.close()
     return logName
 
-n_clients = 10
+n_clients = file_data[1]
 lock = threading.Lock()
 file = createLog()
 
@@ -136,9 +145,9 @@ def logDatosCliente(recepcion, numPaqRecv, hashR, hash, fileName):
         fSize = os.path.getsize(fileName)
         size = "Tamanio del archivo: " + str(fSize) + " bytes\n"
 
-        paquetesR = "Numero de paquetes recibidos por el cliente:" + str(numPaqRecv) + "\n"
+        paquetesR = "Numero de paquetes recibidos por el threadCliente:" + str(numPaqRecv) + "\n"
         separador = "\n---------------------------------------\n"
-        hash = "\nHASH calculado en el cliente: \n" + hash
+        hash = "\nHASH calculado en el threadCliente: \n" + hash
         hashR = "\nHASH calculado en el servidor: \n" + hashR
         logFile = open(file, "a")
         logFile.write(fileN + size + recepcion + "\n" + paquetesR + hashR + hash + separador)
@@ -147,8 +156,8 @@ def logDatosCliente(recepcion, numPaqRecv, hashR, hash, fileName):
 
 for i in range(n_clients):
     if (i == n_clients - 1):
-        t = threading.Thread(target=cliente, args=(i, True, lock))
+        t = threading.Thread(target=threadCliente, args=(i, True, lock))
         t.start()
     else:
-        t = threading.Thread(target=cliente, args=(i, False, lock))
+        t = threading.Thread(target=threadCliente, args=(i, False, lock))
         t.start()

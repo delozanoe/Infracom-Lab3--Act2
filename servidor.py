@@ -8,25 +8,25 @@ import os
 lock = threading.Lock()
 
 
-def pedirDatos():
-    fileName = ""
+def pedirInput():
+    fName = ""
     fileT = ""
     entr = int(input("Ingrese archivo que quiere enviar 1 (100 MB) o 2 (250MB) "))
     if (entr == 1):
-        fileName = "./files/100MB.txt"
+        fName = "./files/100MB.txt"
         fileT = ".txt"
     elif (entr == 2):
-        fileName = "./files/250MB.txt"
+        fName = "./files/250MB.txt"
         fileT = ".txt"
     entr = int(input("Ingrese el numero de clientes en simultaneo a enviar el archivo "))
     numClientes = entr
-    return fileName, fileT, numClientes
+    return fName, fileT, numClientes
 
 
-file_data = pedirDatos()
-fileName = file_data[0]
-n_clientes = file_data[2]
-fileT = file_data[1]
+f_data = pedirInput()
+fName = f_data[0]
+n_clientes = f_data[2]
+fileT = f_data[1]
 c_clientes = 0
 attend = False
 
@@ -34,21 +34,21 @@ def createLog():
     print("Creando log")
 
     # Fecha y hora --creacion log
-    fecha = datetime.datetime.now()
+    date = datetime.datetime.now()
 
-    logName = "Logs/Logs-server/" + str(fecha.timestamp()) + ".txt"
+    logName = "Logs/Logs-server/" + str(date.timestamp()) + ".txt"
     logFile = open(logName, "a")
-    logFile.write("Fecha: " + str(fecha) + "\n")
+    logFile.write("Fecha: " + str(date) + "\n")
 
     # Nombre del archivo y tamanio
-    fileN = fileName.split("/")
+    fileN = fName.split("/")
     fileN = fileN[2]
 
     logFile.write("Nombre del archivo: " + fileN + "\n")
 
-    fSize = os.path.getsize(fileName)
+    fileSize = os.path.getsize(fName)
 
-    logFile.write("Tamanio del archivo: " + str(fSize) + " bytes\n")
+    logFile.write("Tamanio del archivo: " + str(fileSize) + " bytes\n")
     logFile.write("----------------------------------------\n")
 
     logFile.close()
@@ -59,15 +59,15 @@ def createLog():
 logName = createLog()
 
 
-def logDatosCliente(recepcion, tiempo, numPaqEnv, numPaqRecv, hashR, hash):
+def logDataCliente(recepcion, nTime, numPaqEnv, numPaqRecv, hashR, hash):
     with lock:
-        paquetesE = "Numero de paquetes enviados por el servidor:" + str(numPaqEnv) + "\n"
-        paquetesR = "Numero de paquetes recibidos por el cliente:" + str(numPaqRecv) + "\n"
-        tiempoT = "Tiempo: " + str(tiempo) + " segundos\n"
+        paquetesEnv = "Numero de paquetes enviados por el servidor:" + str(numPaqEnv) + "\n"
+        paquetesRec = "Numero de paquetes recibidos por el cliente:" + str(numPaqRecv) + "\n"
+        tiempoT = "Tiempo: " + str(nTime) + " segundos\n"
         separador = "\n---------------------------------------\n"
         hash = "\nHASH calculado en el servidor: \n" + hash
         logFile = open(logName, "a")
-        logFile.write(recepcion + "\n" + paquetesE + paquetesR + tiempoT + hashR + hash + separador)
+        logFile.write(recepcion + "\n" + paquetesEnv +Rec + tiempoT + hashR + hash + separador)
         logFile.close()
 
 
@@ -78,15 +78,15 @@ def servidor(port1,dir):
     global c_clientes
     global attend
     port=20001+port1
-    s = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+    sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
     # Bind to address and ip
-    s.bind((host, port))
-    s.sendto(str(port).encode(),dir)
+    sock.bind((host, port))
+    sock.sendto(str(port).encode(),dir)
     print("UDP server up and listening at port ",port)
 
     while True:
-        data = s.recvfrom(BUFFER)
+        data = sock.recvfrom(BUFFER)
         msg = data[0]
         dir = data[1]
 
@@ -103,28 +103,28 @@ def servidor(port1,dir):
             attend = True
             i = 0
 
-            s.sendto(fileT.encode(), dir)
+            sock.sendto(fileT.encode(), dir)
 
             time.sleep(0.01)
 
             inicioT = time.time()
-            f = open(fileName, 'rb')
+            f = open(fName, 'rb')
             while True:
                 i += 1
                 data = f.read(BUFFER)
                 if not data:
                     break
                 sha1.update(data)
-                s.sendto(data,dir)
+                sock.sendto(data,dir)
             print("Archivo Enviado")
 
             # Envio de Hash
             has = str(sha1.hexdigest())
-            s.sendto(("FINM" + has).encode(),dir)
+            sock.sendto(("FINM" + has).encode(),dir)
             f.close()
 
 
-            data = s.recvfrom(BUFFER)
+            data = sock.recvfrom(BUFFER)
             # Notificacion de recepcion
             datosCiente = data[0].decode().split("/")
             recepcion = datosCiente[1]
@@ -139,7 +139,7 @@ def servidor(port1,dir):
             paqRecv = datosCiente[0]
 
             hashR = datosCiente[4]
-            logDatosCliente(recepcion, totalT, i, paqRecv, hashR, has)
+            logDataCliente(recepcion, totalT, i, paqRecv, hashR, has)
 
             print('Fin envio')
             c_clientes -= 1
@@ -151,7 +151,7 @@ def servidor(port1,dir):
 
             if (terminS == "TERMINATE"):
                 print(terminS)
-                s.close()
+                sock.close()
                 print("Fin Servidor en puerto ",port)
                 break
 
@@ -160,13 +160,13 @@ def servidor(port1,dir):
 port1=20001
 
 # UDP ------> socket.AF_INET, socket.SOCK_DGRAM
-s = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 # Bind to address and ip
-s.bind((host, port1))
+sock.bind((host, port1))
 i=1
 while True:
-    data = s.recvfrom(BUFFER)
+    data = sock.recvfrom(BUFFER)
     msg = data[0]
     dir = data[1]
 
